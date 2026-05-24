@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { OCCUPATION_BY_SLUG, SLUG_BY_STATE } from "@/lib/slugs";
 import { US_STATES } from "@/lib/blsData";
 
-const BASE = "https://salary-percentile.vercel.app";
+const BASE = "https://rankmysalary.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

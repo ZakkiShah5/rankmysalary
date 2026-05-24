@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${occ.label} Salary Percentiles — National Data (2024)`,
     description: `The median ${occ.label} salary is ${fmt(national.p50)} nationally. See full percentile breakdown and compare salaries across all 50 US states — BLS OES 2024 data.`,
-    alternates: { canonical: `https://salary-percentile.vercel.app/salary/${slug}` },
+    alternates: { canonical: `https://rankmysalary.com/salary/${slug}` },
     openGraph: {
       title: `${occ.label} Salary Percentiles (2024)`,
       description: `Median: ${fmt(national.p50)} · Top 10%: ${fmt(national.p90)} · BLS OES 2024`,
@@ -89,8 +89,8 @@ export default async function OccupationPage({ params }: Props) {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://salary-percentile.vercel.app/" },
-      { "@type": "ListItem", position: 2, name: `${occ.label} Salaries`, item: `https://salary-percentile.vercel.app/salary/${slug}` },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://rankmysalary.com/" },
+      { "@type": "ListItem", position: 2, name: `${occ.label} Salaries`, item: `https://rankmysalary.com/salary/${slug}` },
     ],
   };
 

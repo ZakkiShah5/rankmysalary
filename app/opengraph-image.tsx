@@ -194,7 +194,7 @@ export default function Image() {
             background: "rgba(15,23,42,0.6)",
           }}
         >
-          <span style={{ color: "#334155", fontSize: 16 }}>salary-percentile.vercel.app</span>
+          <span style={{ color: "#334155", fontSize: 16 }}>rankmysalary.com</span>
           <span style={{ color: "#334155", fontSize: 16 }}>
             Free · No signup · Instant results
           </span>

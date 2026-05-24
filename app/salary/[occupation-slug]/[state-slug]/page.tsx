@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${occ.label} Salary in ${st.name} — Percentile Rankings (2024)`,
     description: `The median ${occ.label} salary in ${st.name} is ${fmt(state.p50)}, ${diff} ${dir} the national median of ${fmt(national.p50)}. See the full percentile breakdown — BLS OES 2024 data.`,
     alternates: {
-      canonical: `https://salary-percentile.vercel.app/salary/${occSlug}/${stateSlug}`,
+      canonical: `https://rankmysalary.com/salary/${occSlug}/${stateSlug}`,
     },
     openGraph: {
       title: `${occ.label} Salary in ${st.name} (2024)`,
@@ -94,9 +94,9 @@ export default async function StatePage({ params }: Props) {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://salary-percentile.vercel.app/" },
-      { "@type": "ListItem", position: 2, name: `${occ.label} Salaries`, item: `https://salary-percentile.vercel.app/salary/${occSlug}` },
-      { "@type": "ListItem", position: 3, name: st.name, item: `https://salary-percentile.vercel.app/salary/${occSlug}/${stateSlug}` },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://rankmysalary.com/" },
+      { "@type": "ListItem", position: 2, name: `${occ.label} Salaries`, item: `https://rankmysalary.com/salary/${occSlug}` },
+      { "@type": "ListItem", position: 3, name: st.name, item: `https://rankmysalary.com/salary/${occSlug}/${stateSlug}` },
     ],
   };
 
