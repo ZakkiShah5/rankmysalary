@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import Footer from "@/components/Footer";
 
@@ -75,6 +76,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2091517942236891"
           crossOrigin="anonymous"
         />
+        {/* Google Analytics — inline config (queues commands until gtag.js loads) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-NZ2K0JHXRE');`,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -100,6 +110,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body suppressHydrationWarning className="min-h-full flex flex-col">
+        {/* Google Analytics — loads gtag.js after page is interactive */}
+        <Script
+          strategy="afterInteractive"
+          src="https://www.googletagmanager.com/gtag/js?id=G-NZ2K0JHXRE"
+        />
         <main className="flex-1">{children}</main>
         <Footer />
       </body>
