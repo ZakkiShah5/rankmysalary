@@ -11,6 +11,125 @@ export const metadata: Metadata = {
   alternates: { canonical: SITE_URL },
 };
 
+const webAppJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "RankMySalary — Salary Percentile Calculator",
+  "url": `${SITE_URL}`,
+  "description":
+    "Free salary percentile calculator using official BLS OES May 2024 data. Enter your salary, job, and state to instantly see your percentile nationally and in your state. Covers 116 occupations across all 50 states.",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Any",
+  "browserRequirements": "Requires JavaScript",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "creator": { "@type": "Organization", "name": "RankMySalary", "url": `${SITE_URL}` },
+  "featureList": [
+    "Salary percentile calculation for 116 occupation categories",
+    "National and state-level salary rankings",
+    "BLS OES May 2024 official wage data",
+    "All 50 US states and Washington D.C.",
+    "Shareable salary result cards",
+  ],
+};
+
+const howToJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to Find Your Salary Percentile",
+  "description":
+    "Use the RankMySalary calculator to see where your salary ranks among US workers in your occupation and state, using official BLS OES 2024 data.",
+  "totalTime": "PT1M",
+  "step": [
+    {
+      "@type": "HowToStep",
+      "position": 1,
+      "name": "Enter your annual salary",
+      "text":
+        "Type your current gross annual salary (before taxes) into the salary field. Use your base annual wage, not including bonuses or equity.",
+    },
+    {
+      "@type": "HowToStep",
+      "position": 2,
+      "name": "Select your job category",
+      "text":
+        "Choose the occupation group that best matches your role from 116 BLS occupation categories. Use the search box to filter by keyword.",
+    },
+    {
+      "@type": "HowToStep",
+      "position": 3,
+      "name": "Select your state",
+      "text":
+        "Choose the US state where you work. State selection applies BLS regional wage indices to show how your salary ranks locally.",
+    },
+    {
+      "@type": "HowToStep",
+      "position": 4,
+      "name": "Click Calculate My Percentile",
+      "text":
+        "Press the Calculate button to instantly see your national and state percentile rank on a gauge, alongside full BLS salary benchmarks for your occupation.",
+    },
+    {
+      "@type": "HowToStep",
+      "position": 5,
+      "name": "Review and share your results",
+      "text":
+        "Your percentile is shown on a gauge with 10th–90th percentile benchmarks. Download your result card or share it on LinkedIn, X, or Reddit.",
+    },
+  ],
+};
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is a salary percentile?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text":
+          "A salary percentile tells you what percentage of workers in a given occupation earn less than you. For example, if you're at the 70th percentile, you earn more than 70% of workers in that field. It's a more useful benchmark than a simple average because it shows where you stand across the full distribution of wages.",
+      },
+    },
+    {
+      "@type": "Question",
+      "name": "How is my salary percentile calculated?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text":
+          "We use linear interpolation between the BLS wage anchor points (10th, 25th, 50th, 75th, and 90th percentiles) to estimate your exact percentile rank. State figures are derived by applying BLS regional wage indices to the national data. For salaries below the 10th or above the 90th percentile, we flag this clearly rather than extrapolating an unreliable estimate.",
+      },
+    },
+    {
+      "@type": "Question",
+      "name": "What data does this calculator use?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text":
+          "All data comes from the Bureau of Labor Statistics (BLS) Occupational Employment and Wage Statistics (OES) program, May 2024 release. This is the most comprehensive, official source of US occupational wage data, covering over 800 occupations and nearly every industry. We cover 116 occupation groups across all 50 states and Washington D.C.",
+      },
+    },
+    {
+      "@type": "Question",
+      "name": "How do I use this to negotiate my salary?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text":
+          "If you're below the median (50th percentile) for your occupation in your state, you have a data-backed argument for a raise. Come prepared with your percentile result and the BLS benchmark figures from the table below the gauge. Framing your ask around official government data — rather than salary sites — is often more persuasive to employers and hiring managers.",
+      },
+    },
+    {
+      "@type": "Question",
+      "name": "What is the median salary in the United States?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text":
+          "According to BLS OES May 2024 data, the median annual wage across all occupations in the United States is approximately $49,500. However, this varies enormously by occupation — from around $30,000 for food preparation workers to over $236,000 for physicians and surgeons. That's why comparing within your specific occupation is far more meaningful than a national cross-occupation average.",
+      },
+    },
+  ],
+};
+
 const insightsJsonLd = {
   "@context": "https://schema.org",
   "@type": "ItemList",
@@ -77,10 +196,10 @@ const insightsJsonLd = {
 export default function Home() {
   return (
     <main>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(insightsJsonLd) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(insightsJsonLd) }} />
       <div id="calculator">
         <SalaryCalculator />
       </div>
