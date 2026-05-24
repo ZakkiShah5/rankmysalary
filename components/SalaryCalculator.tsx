@@ -225,13 +225,15 @@ const FAQ_ITEMS = [
 interface SalaryCalculatorProps {
   initialCategory?: string;
   initialState?: string;
+  initialSalary?: number;
 }
 
 export default function SalaryCalculator({
   initialCategory = "",
   initialState = "",
+  initialSalary,
 }: SalaryCalculatorProps = {}) {
-  const [salary, setSalary]       = useState("");
+  const [salary, setSalary]       = useState(initialSalary ? String(initialSalary) : "");
   const [state, setState]         = useState(initialState);
   const [category, setCategory]   = useState(initialCategory);
   const [results, setResults]     = useState<Results | null>(null);

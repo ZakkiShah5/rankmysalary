@@ -487,6 +487,11 @@ export function getOccupationData(
 }
 
 // Linear interpolation between BLS anchor percentile points
+export function getStateOverallMedian(state: string): number {
+  const multiplier = STATE_WAGE_MULTIPLIERS[state] ?? 1.0;
+  return Math.round(49500 * multiplier);
+}
+
 export function estimatePercentile(salary: number, data: PercentileData): number {
   const { p10, p25, p50, p75, p90 } = data;
 

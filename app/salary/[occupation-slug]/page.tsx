@@ -6,23 +6,77 @@ import {
   STATE_BY_SLUG,
   SLUG_BY_STATE,
 } from "@/lib/slugs";
-import { getOccupationData, US_STATES } from "@/lib/blsData";
+import {
+  getOccupationData,
+  US_STATES,
+  JOB_CATEGORIES,
+  estimatePercentile,
+  getStateOverallMedian,
+} from "@/lib/blsData";
 import { fmt, pct } from "@/lib/format";
 import SalaryCalculator from "@/components/SalaryCalculator";
 import FAQAccordion from "@/components/FAQAccordion";
 
 export const dynamicParams = false;
 
+// ── Salary-check pages ────────────────────────────────────────────────────────
+const SALARY_CHECK_AMOUNTS = [
+  40000, 45000, 50000, 55000, 60000, 65000, 70000, 75000,
+  80000, 85000, 90000, 95000, 100000, 110000, 120000, 130000, 150000, 200000,
+];
+const SALARY_CHECK_RE = /^is-(\d+)-a-good-salary$/;
+
+// BLS OES May 2024 all-worker annual wage percentile anchors
+const OVERALL_PERCENTILES = {
+  p10: 31200, p25: 40560, p50: 49500, p75: 74880, p90: 113880, mean: 61900,
+};
+
+function estimateNationalPercentile(salary: number): number {
+  return estimatePercentile(salary, OVERALL_PERCENTILES);
+}
+
+function ordinalLocal(n: number): string {
+  const s = n % 100;
+  if (s >= 11 && s <= 13) return `${n}th`;
+  switch (n % 10) {
+    case 1: return `${n}st`;
+    case 2: return `${n}nd`;
+    case 3: return `${n}rd`;
+    default: return `${n}th`;
+  }
+}
+
 export function generateStaticParams() {
-  return Object.keys(OCCUPATION_BY_SLUG).map((slug) => ({
+  const occSlugs = Object.keys(OCCUPATION_BY_SLUG).map((slug) => ({
     "occupation-slug": slug,
   }));
+  const salarySlugs = SALARY_CHECK_AMOUNTS.map((amount) => ({
+    "occupation-slug": `is-${amount}-a-good-salary`,
+  }));
+  return [...occSlugs, ...salarySlugs];
 }
 
 type Props = { params: Promise<{ "occupation-slug": string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { "occupation-slug": slug } = await params;
+
+  const salaryMatch = SALARY_CHECK_RE.exec(slug);
+  if (salaryMatch) {
+    const amount = parseInt(salaryMatch[1], 10);
+    const percentile = estimateNationalPercentile(amount);
+    const fmtAmount = fmt(amount);
+    return {
+      title: `Is ${fmtAmount} a Good Salary in 2024? — RankMySalary`,
+      description: `${fmtAmount} puts you at the ${ordinalLocal(percentile)} percentile of all US workers. See occupation and state comparisons using BLS OES May 2024 data.`,
+      alternates: { canonical: `https://rankmysalary.com/salary/${slug}` },
+      openGraph: {
+        title: `Is ${fmtAmount} a Good Salary? (${ordinalLocal(percentile)} Percentile)`,
+        description: `BLS OES May 2024 — see percentile, occupation & state comparisons for ${fmtAmount}.`,
+      },
+    };
+  }
+
   const occ = OCCUPATION_BY_SLUG[slug];
   if (!occ) return {};
   const { national } = getOccupationData(occ.key, "CA");
@@ -61,8 +115,289 @@ function BenchmarkRow({ label, value, salary }: { label: string; value: number; 
   );
 }
 
+// ── Salary-check page content ─────────────────────────────────────────────────
+function SalaryCheckContent({ amount, slug }: { amount: number; slug: string }) {
+  const percentile = estimateNationalPercentile(amount);
+  const fmtAmount = fmt(amount);
+  const nationalMedian = 49500;
+  const aboveNationalMedian = amount >= nationalMedian;
+  const vsMedianPct = Math.round(Math.abs((amount - nationalMedian) / nationalMedian) * 100);
+
+  // Occupation comparison
+  const occData = JOB_CATEGORIES.map((c) => {
+    const { national } = getOccupationData(c.value, "CA");
+    return { label: c.label, median: national.p50, isAbove: amount >= national.p50 };
+  }).sort((a, b) => b.median - a.median);
+  const occAboveCount = occData.filter((o) => o.isAbove).length;
+
+  // State comparison
+  const stateData = Object.entries(US_STATES).map(([code, name]) => {
+    const stateMedian = getStateOverallMedian(code);
+    return { code, name, stateMedian, isAbove: amount >= stateMedian };
+  }).sort((a, b) => b.stateMedian - a.stateMedian);
+  const statesAboveCount = stateData.filter((s) => s.isAbove).length;
+
+  // Article copy helpers
+  const closestAbove = occData.filter((o) => o.isAbove).sort((a, b) => b.median - a.median).slice(0, 3);
+  const closestBelow = occData.filter((o) => !o.isAbove).sort((a, b) => a.median - b.median).slice(0, 3);
+  const rankPhrase =
+    percentile >= 90 ? "top 10% of" :
+    percentile >= 75 ? "top quartile of" :
+    percentile >= 50 ? "above the median for" :
+    percentile >= 25 ? "below the median for" :
+    "bottom quartile of";
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: `Is ${fmtAmount} a Good Salary in 2024?`,
+    description: `${fmtAmount} is at the ${ordinalLocal(percentile)} percentile of US workers nationally, based on BLS OES May 2024 data.`,
+    url: `https://rankmysalary.com/salary/${slug}`,
+    author: { "@type": "Organization", name: "RankMySalary" },
+  };
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://rankmysalary.com/" },
+      { "@type": "ListItem", position: 2, name: `Is ${fmtAmount} a Good Salary?`, item: `https://rankmysalary.com/salary/${slug}` },
+    ],
+  };
+
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+
+      <div className="max-w-[1100px] mx-auto">
+
+        {/* ── Hero ──────────────────────────────────────────────────────────── */}
+        <div className="relative px-6 pt-20 pb-10 text-center overflow-hidden">
+          <div className="relative">
+            <nav aria-label="Breadcrumb" className="flex items-center justify-center gap-2 text-xs text-slate-600 mb-4">
+              <Link href="/" className="hover:text-slate-400 transition-colors">Home</Link>
+              <span>/</span>
+              <span className="text-slate-500">Is {fmtAmount} a Good Salary?</span>
+            </nav>
+            <h1 className="font-black tracking-tight text-white mb-3 leading-tight" style={{ fontSize: "clamp(28px, 4vw, 44px)" }}>
+              Is {fmtAmount} a Good Salary in 2024?
+            </h1>
+            <p className="text-slate-400 text-base max-w-2xl mx-auto leading-relaxed">
+              <strong className="text-white">{fmtAmount}</strong> places you at the{" "}
+              <strong className="text-white">{ordinalLocal(percentile)} percentile</strong> of all US workers —{" "}
+              <span style={{ color: aboveNationalMedian ? "#4ade80" : "#f87171" }}>
+                {vsMedianPct}% {aboveNationalMedian ? "above" : "below"}
+              </span>{" "}
+              the national median of $49,500.
+            </p>
+          </div>
+        </div>
+
+        {/* ── Key stats strip ────────────────────────────────────────────────── */}
+        <div className="mx-4 md:mx-6 mb-6">
+          <div className="glass rounded-2xl p-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Percentile (All Workers)</span>
+                <span className="text-2xl font-black text-white tabular-nums">{ordinalLocal(percentile)}</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">vs National Median</span>
+                <span className="text-2xl font-black tabular-nums" style={{ color: aboveNationalMedian ? "#4ade80" : "#f87171" }}>
+                  {aboveNationalMedian ? "+" : "-"}{vsMedianPct}%
+                </span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">States Above Median</span>
+                <span className="text-2xl font-black text-white tabular-nums">{statesAboveCount}<span className="text-base font-semibold text-slate-500">/51</span></span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Occupations Above Median</span>
+                <span className="text-2xl font-black text-white tabular-nums">{occAboveCount}<span className="text-base font-semibold text-slate-500">/116</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Article ───────────────────────────────────────────────────────── */}
+        <div className="mx-4 md:mx-6 mb-6">
+          <article className="glass rounded-2xl p-7">
+            <h2 className="text-xl font-bold text-white mb-4 leading-snug">
+              Is {fmtAmount} a Good Salary? What BLS Data Shows
+            </h2>
+            <div className="space-y-4 text-sm text-slate-400 leading-relaxed">
+              <p>
+                A salary of <strong className="text-slate-200">{fmtAmount}</strong> puts you in the{" "}
+                <strong className="text-slate-200">{rankPhrase}</strong> all US workers, ranking at the{" "}
+                <strong className="text-slate-200">{ordinalLocal(percentile)} percentile</strong> nationally according
+                to Bureau of Labor Statistics Occupational Employment and Wage Statistics (OES) May 2024 data.
+                The national median annual wage across all occupations is{" "}
+                <strong className="text-slate-200">$49,500</strong>, so {fmtAmount} is{" "}
+                <strong style={{ color: aboveNationalMedian ? "#4ade80" : "#f87171" }}>
+                  {vsMedianPct}% {aboveNationalMedian ? "above" : "below"}
+                </strong>{" "}
+                that benchmark. {aboveNationalMedian
+                  ? `You out-earn roughly ${percentile}% of American workers across all occupations.`
+                  : `Roughly ${100 - percentile}% of American workers across all occupations earn more.`
+                }
+              </p>
+              <p>
+                Geography reshapes what {fmtAmount} means in practice.{" "}
+                {fmtAmount} exceeds the overall state median wage in{" "}
+                <strong className="text-slate-200">{statesAboveCount} of 51 US states and jurisdictions</strong>.
+                In lower-wage states like Mississippi (state median ~{fmt(getStateOverallMedian("MS"))}),
+                Arkansas (~{fmt(getStateOverallMedian("AR"))}), and West Virginia (~{fmt(getStateOverallMedian("WV"))}),
+                {fmtAmount} represents a strong above-average income. However, in high-wage states
+                like California (~{fmt(getStateOverallMedian("CA"))}), Massachusetts (~{fmt(getStateOverallMedian("MA"))}),
+                and Washington (~{fmt(getStateOverallMedian("WA"))}), the state median is{" "}
+                {amount >= getStateOverallMedian("CA") ? "still below" : "above"} {fmtAmount}.
+              </p>
+              <p>
+                Occupation matters as much as geography. {fmtAmount} is{" "}
+                <strong className="text-slate-200">above the national median</strong> for{" "}
+                <strong className="text-slate-200">{occAboveCount} of 116</strong> occupation categories tracked by BLS.
+                {closestAbove.length > 0 && (
+                  <> This includes occupations like{" "}
+                    {closestAbove.map((o, i) => (
+                      <span key={o.label}>
+                        <strong className="text-slate-200">{o.label}</strong> (median {fmt(o.median)})
+                        {i < closestAbove.length - 1 ? ", " : ""}
+                      </span>
+                    ))}.
+                  </>
+                )}
+                {closestBelow.length > 0 && (
+                  <> For higher-paying roles like{" "}
+                    {closestBelow.map((o, i) => (
+                      <span key={o.label}>
+                        <strong className="text-slate-200">{o.label}</strong> (median {fmt(o.median)})
+                        {i < closestBelow.length - 1 ? ", " : ""}
+                      </span>
+                    ))}, {fmtAmount} falls below the typical midpoint.
+                  </>
+                )}
+              </p>
+              <p>
+                Whether {fmtAmount} is a good salary ultimately depends on your specific occupation,
+                state, experience level, and household cost of living. A{" "}
+                <strong className="text-slate-200">percentile within your field</strong> is far more
+                meaningful than a cross-occupation average. Use the calculator below to enter your job
+                category and state and see exactly where you rank among peers in the same occupation.
+              </p>
+            </div>
+          </article>
+        </div>
+
+        {/* ── Calculator ────────────────────────────────────────────────────── */}
+        <div className="mx-4 md:mx-6 mb-6">
+          <div className="glass rounded-2xl p-6" style={{ boxShadow: "0 8px 40px rgba(0,0,0,0.45)" }}>
+            <h2 className="text-sm font-semibold text-slate-300 mb-1 tracking-wide">
+              See Your Exact Percentile by Occupation &amp; State
+            </h2>
+            <p className="text-xs text-slate-600 mb-5">Pre-filled with {fmtAmount} — select your job and state to rank yourself</p>
+            <SalaryCalculator initialSalary={amount} />
+          </div>
+        </div>
+
+        {/* ── Occupation comparison ─────────────────────────────────────────── */}
+        <div className="mx-4 md:mx-6 mb-6">
+          <div className="glass rounded-2xl p-6">
+            <h2 className="text-sm font-semibold text-slate-300 mb-1 tracking-wide">
+              Is {fmtAmount} Above or Below Median by Occupation?
+            </h2>
+            <p className="text-xs text-slate-600 mb-5">
+              {fmtAmount} is above the national median for {occAboveCount} of 116 BLS occupation groups.
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-white/[0.08]">
+                    <th className="py-2 pr-4 text-left text-[10px] font-semibold uppercase tracking-widest text-slate-600">Occupation</th>
+                    <th className="py-2 pr-4 text-right text-[10px] font-semibold uppercase tracking-widest text-slate-600">Median Salary</th>
+                    <th className="py-2 text-right text-[10px] font-semibold uppercase tracking-widest text-slate-600">Your Salary</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {occData.map((o) => (
+                    <tr key={o.label} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                      <td className="py-2 pr-4 text-sm text-slate-300">{o.label}</td>
+                      <td className="py-2 pr-4 text-right text-sm font-semibold text-white tabular-nums">{fmt(o.median)}</td>
+                      <td className="py-2 text-right">
+                        <span
+                          className="text-xs font-bold px-2 py-0.5 rounded"
+                          style={{
+                            background: o.isAbove ? "rgba(74,222,128,0.14)" : "rgba(248,113,113,0.14)",
+                            color: o.isAbove ? "#4ade80" : "#f87171",
+                          }}
+                        >
+                          {o.isAbove ? "↑ above" : "↓ below"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* ── State comparison ──────────────────────────────────────────────── */}
+        <div className="mx-4 md:mx-6 mb-16">
+          <div className="glass rounded-2xl p-6">
+            <h2 className="text-sm font-semibold text-slate-300 mb-1 tracking-wide">
+              Is {fmtAmount} Above or Below the State Median?
+            </h2>
+            <p className="text-xs text-slate-600 mb-5">
+              Comparing {fmtAmount} to each state&apos;s overall median wage (BLS OES 2024, all occupations).
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-white/[0.08]">
+                    <th className="py-2 pr-4 text-left text-[10px] font-semibold uppercase tracking-widest text-slate-600">State</th>
+                    <th className="py-2 pr-4 text-right text-[10px] font-semibold uppercase tracking-widest text-slate-600">State Median</th>
+                    <th className="py-2 text-right text-[10px] font-semibold uppercase tracking-widest text-slate-600">Your Salary</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stateData.map((s) => (
+                    <tr key={s.code} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                      <td className="py-2 pr-4 text-sm text-slate-300">{s.name}</td>
+                      <td className="py-2 pr-4 text-right text-sm font-semibold text-white tabular-nums">{fmt(s.stateMedian)}</td>
+                      <td className="py-2 text-right">
+                        <span
+                          className="text-xs font-bold px-2 py-0.5 rounded"
+                          style={{
+                            background: s.isAbove ? "rgba(74,222,128,0.14)" : "rgba(248,113,113,0.14)",
+                            color: s.isAbove ? "#4ade80" : "#f87171",
+                          }}
+                        >
+                          {s.isAbove ? "↑ above" : "↓ below"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </>
+  );
+}
+
 export default async function OccupationPage({ params }: Props) {
   const { "occupation-slug": slug } = await params;
+
+  const salaryMatch = SALARY_CHECK_RE.exec(slug);
+  if (salaryMatch) {
+    const amount = parseInt(salaryMatch[1], 10);
+    if (!SALARY_CHECK_AMOUNTS.includes(amount)) notFound();
+    return <SalaryCheckContent amount={amount} slug={slug} />;
+  }
+
   const occ = OCCUPATION_BY_SLUG[slug];
   if (!occ) notFound();
 
