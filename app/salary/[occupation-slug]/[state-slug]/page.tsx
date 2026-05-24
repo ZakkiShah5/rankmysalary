@@ -50,6 +50,82 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+// Generates a unique ~100-word intro paragraph from live BLS data.
+// Template variant is deterministic — same occupation+state always gets the same structure.
+function generateStateIntro(
+  occLabel: string,
+  stName: string,
+  national: { p50: number; p90: number },
+  state: { p10: number; p25: number; p50: number; p75: number; p90: number; mean: number },
+  stateRank: number,
+  totalStates: number,
+): string {
+  const absDiff = Math.round(Math.abs(((state.p50 - national.p50) / national.p50) * 100));
+  const dir = state.p50 >= national.p50 ? "above" : "below";
+  const diffPhrase =
+    absDiff === 0
+      ? `right at the national median of ${fmt(national.p50)}`
+      : `${absDiff}% ${dir} the national median of ${fmt(national.p50)}`;
+  const meanDir = state.mean >= state.p50 ? "above" : "below";
+
+  function rankPhrase(): string {
+    const q = Math.round(totalStates / 4);
+    if (stateRank === 1) return "the single highest-paying state";
+    if (stateRank <= 3) return "one of the three highest-paying states";
+    if (stateRank <= q) return "in the top quartile of states";
+    if (stateRank <= q * 2) return "above the national average";
+    if (stateRank <= q * 3) return "below the national average";
+    if (stateRank >= totalStates - 2) return "one of the lowest-paying states";
+    return "in the bottom quartile of states";
+  }
+
+  // Hash of occupation + state names → deterministic variant 0–2
+  const h =
+    occLabel.length * 7 +
+    stName.length * 13 +
+    occLabel.charCodeAt(0) +
+    stName.charCodeAt(0);
+  const v = h % 3;
+
+  if (v === 0) {
+    return (
+      `With a median annual salary of ${fmt(state.p50)}, ${occLabel} in ${stName} earn ` +
+      `${diffPhrase}, ranking #${stateRank} out of ${totalStates} states for this occupation. ` +
+      `This makes ${stName} ${rankPhrase()} in the US. The middle 50% of ${occLabel} in ` +
+      `${stName} fall between ${fmt(state.p25)} and ${fmt(state.p75)} annually, while the ` +
+      `top 10% take home more than ${fmt(state.p90)}. Entry-level positions typically start ` +
+      `near ${fmt(state.p10)}. The mean wage of ${fmt(state.mean)} sits ${meanDir} the ` +
+      `median, reflecting the shape of the wage distribution in this state. Use the ` +
+      `calculator above to find your exact percentile within ${stName}'s distribution.`
+    );
+  }
+
+  if (v === 1) {
+    return (
+      `${stName} ranks #${stateRank} out of ${totalStates} states for ${occLabel} salaries, ` +
+      `making it ${rankPhrase()} for this occupation nationwide. The median salary of ` +
+      `${fmt(state.p50)} is ${diffPhrase}. Salaries span a wide range: the 10th percentile ` +
+      `starts at ${fmt(state.p10)}, the 75th percentile reaches ${fmt(state.p75)}, and the ` +
+      `top 10% of earners clear ${fmt(state.p90)}. The state mean of ${fmt(state.mean)} ` +
+      `sits ${meanDir} the median, reflecting the spread of high earners at the top of the ` +
+      `distribution. Use the percentile calculator above to see exactly where your salary ` +
+      `ranks among ${occLabel} in ${stName}.`
+    );
+  }
+
+  // v === 2
+  return (
+    `In ${stName}, ${occLabel} earn a median salary of ${fmt(state.p50)} — ${diffPhrase}. ` +
+    `${stName} ranks #${stateRank} among all ${totalStates} states for this occupation, ` +
+    `putting it ${rankPhrase()}. Workers between the 25th and 75th percentile earn ` +
+    `${fmt(state.p25)} to ${fmt(state.p75)} annually, while the top 10% in ${stName} earn ` +
+    `more than ${fmt(state.p90)}, compared to the national 90th-percentile of ` +
+    `${fmt(national.p90)}. Entry-level salaries near the 10th percentile start around ` +
+    `${fmt(state.p10)}. Use the calculator above to benchmark your pay against ` +
+    `${stName}'s complete wage distribution for this role.`
+  );
+}
+
 function BenchmarkRow({ label, value }: { label: string; value: number }) {
   return (
     <tr className="border-b border-white/[0.05] last:border-0">
@@ -157,6 +233,20 @@ export default async function StatePage({ params }: Props) {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* ── Salary overview paragraph ─────────────────────────────────────── */}
+        <div className="mx-4 md:mx-6 mb-6">
+          <p className="text-sm text-slate-400 leading-relaxed max-w-3xl">
+            {generateStateIntro(
+              occ.label,
+              st.name,
+              national,
+              state,
+              stateRank,
+              allStates.length,
+            )}
+          </p>
         </div>
 
         {/* ── Key stats strip ────────────────────────────────────────────────── */}
