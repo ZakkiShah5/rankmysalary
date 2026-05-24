@@ -5,8 +5,9 @@ import {
   OCCUPATION_BY_SLUG,
   STATE_BY_SLUG,
   SLUG_BY_STATE,
+  SLUG_BY_KEY,
 } from "@/lib/slugs";
-import { getOccupationData, US_STATES } from "@/lib/blsData";
+import { getOccupationData, US_STATES, JOB_CATEGORIES } from "@/lib/blsData";
 import { fmt, pct } from "@/lib/format";
 import SalaryCalculator from "@/components/SalaryCalculator";
 import FAQAccordion from "@/components/FAQAccordion";
@@ -165,6 +166,23 @@ export default async function StatePage({ params }: Props) {
     .slice(Math.max(0, rankIdx - 2), rankIdx + 3)
     .filter((s) => s.code !== st.code)
     .slice(0, 4);
+
+  // Top 5 highest-paying occupations in this state (excluding current occupation)
+  const topOccupations = JOB_CATEGORIES
+    .map((c) => {
+      const d = getOccupationData(c.value, st.code);
+      return {
+        key: c.value,
+        label: c.label,
+        slug: SLUG_BY_KEY[c.value] ?? "",
+        stateMedian: d.state.p50,
+        vsNational: pct(d.state.p50, d.national.p50),
+        isAbove: d.state.p50 >= d.national.p50,
+      };
+    })
+    .filter((o) => o.key !== occ.key && o.slug)
+    .sort((a, b) => b.stateMedian - a.stateMedian)
+    .slice(0, 5);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -367,6 +385,42 @@ export default async function StatePage({ params }: Props) {
                 >
                   ← View all states for {occ.label}
                 </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Highest paying jobs in this state ────────────────────────── */}
+        {topOccupations.length > 0 && (
+          <div className="mx-4 md:mx-6 mb-6">
+            <div className="glass rounded-2xl p-6">
+              <h2 className="text-sm font-semibold text-slate-300 mb-5 tracking-wide">
+                Highest Paying Jobs in {st.name}
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+                {topOccupations.map((o, i) => (
+                  <Link
+                    key={o.key}
+                    href={`/salary/${o.slug}/${stateSlug}`}
+                    className="flex flex-col gap-1.5 p-4 rounded-xl transition-all duration-200 group"
+                    style={{ background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.18)" }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-blue-400">#{i + 1}</span>
+                      <svg className="w-3.5 h-3.5 text-slate-600 group-hover:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                      </svg>
+                    </div>
+                    <span className="text-xs font-semibold text-white leading-tight">{o.label}</span>
+                    <span className="text-sm font-bold tabular-nums" style={{ color: "#4ade80" }}>{fmt(o.stateMedian)}</span>
+                    <span
+                      className="text-[10px] font-semibold"
+                      style={{ color: o.isAbove ? "#10b981" : "#f87171" }}
+                    >
+                      {o.vsNational} vs national
+                    </span>
+                  </Link>
+                ))}
               </div>
             </div>
           </div>

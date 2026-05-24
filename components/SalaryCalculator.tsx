@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import Link from "next/link";
 import {
   JOB_CATEGORIES,
   JOB_CATEGORY_GROUPS,
@@ -9,6 +10,7 @@ import {
   estimatePercentile,
   type PercentileData,
 } from "@/lib/blsData";
+import { SLUG_BY_KEY, SLUG_BY_STATE } from "@/lib/slugs";
 import SearchableSelect from "@/components/SearchableSelect";
 import GaugeArc from "@/components/GaugeArc";
 import ShareButton from "@/components/ShareButton";
@@ -240,6 +242,24 @@ export default function SalaryCalculator({
   const [error, setError]         = useState("");
   const [benchTab, setBenchTab]   = useState<"national" | "state">("national");
   const resultsRef                = useRef<HTMLDivElement>(null);
+
+  // Top 4 highest-paying states for the current occupation (excluding selected state)
+  const relatedStates = useMemo(() => {
+    if (!results) return [];
+    const occSlug = SLUG_BY_KEY[category] ?? "";
+    if (!occSlug) return [];
+    return (Object.keys(US_STATES) as string[])
+      .map((code) => ({
+        code,
+        name: US_STATES[code] ?? code,
+        median: getOccupationData(category, code).state.p50,
+        slug: SLUG_BY_STATE[code] ?? "",
+        occSlug,
+      }))
+      .filter((s) => s.code !== state && s.slug)
+      .sort((a, b) => b.median - a.median)
+      .slice(0, 4);
+  }, [results, category, state]);
 
   const isReadyToCalculate = !!salary && !!state && !!category && !results;
 
@@ -568,6 +588,39 @@ export default function SalaryCalculator({
                   }
                 />
               </div>
+
+              {/* Related: See salaries in other states */}
+              {relatedStates.length > 0 && (
+                <div className="glass rounded-2xl p-6 anim-fade-up delay-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 mb-3">
+                    Related
+                  </p>
+                  <h3 className="text-sm font-semibold text-slate-300 mb-4">
+                    See {results.categoryLabel} Salaries in Other States
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {relatedStates.map((s) => (
+                      <Link
+                        key={s.code}
+                        href={`/salary/${s.occSlug}/${s.slug}`}
+                        className="flex flex-col gap-1 p-4 rounded-xl transition-all duration-200 hover:bg-white/[0.04] group"
+                        style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}
+                      >
+                        <span className="text-xs text-slate-400 font-medium group-hover:text-blue-400 transition-colors">{s.name}</span>
+                        <span className="text-sm font-bold text-white tabular-nums">{fmt(s.median)}</span>
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="mt-3 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                    <Link
+                      href={`/salary/${SLUG_BY_KEY[category] ?? ""}`}
+                      className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      View all states for {results.categoryLabel} →
+                    </Link>
+                  </div>
+                </div>
+              )}
 
               <p className="text-center text-xs text-slate-700 pb-2 anim-fade-up delay-2">
                 Data: Bureau of Labor Statistics OES May 2024 · State figures use BLS regional wage indices

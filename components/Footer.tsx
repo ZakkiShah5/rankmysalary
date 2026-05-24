@@ -1,5 +1,7 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
+import { JOB_CATEGORY_GROUPS } from "@/lib/blsData";
+import { SLUG_BY_KEY } from "@/lib/slugs";
 
 export default function Footer() {
   return (
@@ -60,6 +62,38 @@ export default function Footer() {
               </span>
               <span className="text-xs text-slate-600">BLS OES May 2024 · 116 occupations</span>
             </div>
+          </div>
+        </div>
+
+        {/* Occupation sitemap */}
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }} className="pt-8 mb-8">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-6">
+            Salary Data by Occupation
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-7">
+            {JOB_CATEGORY_GROUPS.map((group) => (
+              <div key={group.group}>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-2.5">
+                  {group.group}
+                </p>
+                <ul className="space-y-1.5">
+                  {group.categories.map((cat) => {
+                    const slug = SLUG_BY_KEY[cat.value];
+                    if (!slug) return null;
+                    return (
+                      <li key={cat.value}>
+                        <Link
+                          href={`/salary/${slug}`}
+                          className="text-xs text-slate-500 hover:text-slate-300 transition-colors leading-relaxed"
+                        >
+                          {cat.label}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
           </div>
         </div>
 
