@@ -36,6 +36,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# BLS data files (large Excel downloads)
+*.xlsx
+*.xls
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

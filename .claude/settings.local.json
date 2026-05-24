@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(ping -n 6 127.0.0.1)",
+      "PowerShell(Get-NetTCPConnection *)",
+      "Bash(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\NEXGEN\\\\Desktop\\\\Side Hustles\\\\salary-percentile\\\\app\\\\salary\\\\[occupation-slug]\\\\[state-slug]\")",
+      "Bash(Out-Null)",
+      "Bash(node -e ' *)"
+    ]
+  }
+}
