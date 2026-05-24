@@ -2,21 +2,15 @@ import Link from "next/link";
 import Logo from "@/components/Logo";
 
 const POPULAR_OCCUPATIONS = [
-  { href: "/salary/software-developers-engineers", label: "Software Developers" },
-  { href: "/salary/registered-nurses",             label: "Registered Nurses" },
-  { href: "/salary/high-school-teachers",           label: "Teachers" },
-  { href: "/salary/financial-analysts-advisors",    label: "Financial Analysts" },
-  { href: "/salary/data-scientists-ml-engineers",   label: "Data Scientists" },
-  { href: "/salary/physicians-surgeons",             label: "Physicians & Surgeons" },
-  { href: "/salary/civil-structural-engineers",      label: "Engineers" },
+  { href: "/salary/software-developers", label: "Software Developers" },
+  { href: "/salary/registered-nurses",   label: "Registered Nurses" },
+  { href: "/salary/financial-analysts",  label: "Financial Analysts" },
 ];
 
 const RESOURCES = [
-  { href: "/",                                    label: "Salary Calculator" },
-  { href: "/#calculator",                         label: "Am I Underpaid?" },
-  { href: "/salary/software-developers-engineers", label: "Salary by State" },
-  { href: "/#calculator",                         label: "Average Salary by Occupation" },
-  { href: "/salary/is-100000-a-good-salary",      label: "Is $100k a Good Salary?" },
+  { href: "/",                              label: "Salary Calculator" },
+  { href: "/salary/is-100000-a-good-salary", label: "Is $100k a Good Salary?" },
+  { href: "/#faq",                          label: "BLS Data Methodology" },
 ];
 
 export default function Footer() {
@@ -61,15 +55,6 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
-              <li>
-                <Link
-                  href="/#calculator"
-                  className="text-sm font-medium transition-colors"
-                  style={{ color: "#3b82f6" }}
-                >
-                  → View all occupations
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -89,16 +74,6 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
-              <li>
-                <a
-                  href="https://www.bls.gov/oes/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-slate-400 hover:text-slate-200 transition-colors"
-                >
-                  BLS Data Methodology ↗
-                </a>
-              </li>
             </ul>
           </div>
 

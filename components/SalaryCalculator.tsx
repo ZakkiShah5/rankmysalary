@@ -631,7 +631,7 @@ export default function SalaryCalculator({
       </div>
 
       {/* ── FAQ section ─────────────────────────────────────────────────────── */}
-      <section aria-label="Frequently Asked Questions" className="mx-4 md:mx-6 mb-16 mt-2">
+      <section id="faq" aria-label="Frequently Asked Questions" className="mx-4 md:mx-6 mb-16 mt-2">
         <h2 className="text-xl font-bold text-slate-200 mb-6 text-center">
           Frequently Asked Questions
         </h2>
