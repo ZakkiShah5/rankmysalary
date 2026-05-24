@@ -25,7 +25,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/salary/software-developers" className="text-sm text-slate-400 hover:text-slate-200 transition-colors">
+                <Link href="/salary/software-developers-engineers" className="text-sm text-slate-400 hover:text-slate-200 transition-colors">
                   Software Developer Salaries
                 </Link>
               </li>
@@ -35,7 +35,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/salary/financial-analysts" className="text-sm text-slate-400 hover:text-slate-200 transition-colors">
+                <Link href="/salary/financial-analysts-advisors" className="text-sm text-slate-400 hover:text-slate-200 transition-colors">
                   Financial Analyst Salaries
                 </Link>
               </li>
