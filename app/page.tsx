@@ -81,7 +81,9 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(insightsJsonLd) }}
       />
-      <SalaryCalculator />
+      <div id="calculator">
+        <SalaryCalculator />
+      </div>
 
       {/* ── Salary Insights Blog Section ──────────────────────────────────────── */}
       <section
