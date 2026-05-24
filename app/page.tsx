@@ -193,6 +193,45 @@ const insightsJsonLd = {
   ],
 };
 
+// ── Card data for the Salary Insights grid ────────────────────────────────────
+const INSIGHT_CARDS = [
+  {
+    id: "article-good-salary",
+    tag: "SALARY GUIDE",
+    title: "What Is a Good Salary in the United States in 2024?",
+    excerpt:
+      "The national median annual wage is $49,500, but whether that figure is 'good' depends entirely on your occupation, state, and cost of living. Salary percentiles give you a far more meaningful benchmark — see exactly where you rank in your specific field.",
+  },
+  {
+    id: "article-negotiation",
+    tag: "NEGOTIATION",
+    title: "How to Use Salary Percentile Data to Negotiate Your Pay",
+    excerpt:
+      "BLS data gives you an authoritative, hard-to-dispute benchmark for your next salary conversation — far stronger than crowdsourced sites like Glassdoor. If you're below the 50th percentile for your role, you have a concrete, data-backed case for a raise.",
+  },
+  {
+    id: "article-highest-paying",
+    tag: "SALARY DATA",
+    title: "Highest Paying Occupations in America — BLS 2024 Data",
+    excerpt:
+      "Top executives earn a national median of $189,520, IT managers $169,510, and software developers $127,260 — the highest-paying roles all require advanced education or significant leverage over capital or teams. Technology, management, and healthcare dominate the top tier.",
+  },
+  {
+    id: "article-bls-vs-crowdsourced",
+    tag: "DATA QUALITY",
+    title: "Why Government Salary Data Is More Reliable Than Crowdsourced Estimates",
+    excerpt:
+      "The BLS surveys 1.1 million employer establishments directly — not self-reported estimates — making it far more accurate than Glassdoor or PayScale. Selection bias systematically inflates crowdsourced figures, especially for tech workers in high-cost cities.",
+  },
+  {
+    id: "article-salary-by-state",
+    tag: "BY STATE",
+    title: "Salary Differences by State — What the BLS Data Shows",
+    excerpt:
+      "Workers in California and DC earn 26–38% above the national median, while Mississippi and West Virginia sit 15–20% below — a gap that compounds dramatically over a career. Remote work lets some workers capture the arbitrage between high-wage salaries and low-cost locations.",
+  },
+] as const;
+
 export default function Home() {
   return (
     <main>
@@ -204,341 +243,77 @@ export default function Home() {
         <SalaryCalculator />
       </div>
 
-      {/* ── Salary Insights Blog Section ──────────────────────────────────────── */}
+      {/* ── Salary Insights Card Grid ──────────────────────────────────────────── */}
       <section
         id="salary-insights"
         aria-labelledby="insights-heading"
-        className="max-w-[1100px] mx-auto px-4 md:px-6 pb-20"
+        className="max-w-[1100px] mx-auto px-4 md:px-6 pt-10 pb-20"
+        style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
       >
-        <div className="mb-8">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-2">
-            Salary Insights
-          </p>
+        {/* Section header */}
+        <div className="mb-10">
           <h2
             id="insights-heading"
-            className="text-2xl font-bold text-slate-100"
+            className="text-3xl font-bold text-white mb-2"
           >
-            What the BLS Data Really Shows
+            Salary Insights
           </h2>
-          <p className="text-sm text-slate-500 mt-1">
-            Research-backed salary guides powered by BLS OES May 2024 data.
+          <p className="text-sm text-slate-400">
+            Research-backed guides powered by official BLS 2024 data
           </p>
         </div>
 
-        <div className="space-y-6">
-
-          {/* ── Article 1 ───────────────────────────────────────────────────── */}
-          <article
-            id="article-good-salary"
-            className="glass rounded-2xl p-7"
-            aria-labelledby="article-1-title"
-          >
-            <h2
-              id="article-1-title"
-              className="text-xl font-bold text-white mb-4 leading-snug"
+        {/* Card grid — 2 col desktop, 1 col mobile */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {INSIGHT_CARDS.map((card) => (
+            <article
+              key={card.id}
+              id={card.id}
+              className="flex flex-col gap-4 rounded-xl p-6 border transition-all duration-200 hover:border-blue-500/30 hover:shadow-[0_0_24px_rgba(59,130,246,0.07)]"
+              style={{
+                background: "#1e293b",
+                border: "1px solid rgba(255,255,255,0.07)",
+              }}
             >
-              What Is a Good Salary in the United States in 2024?
-            </h2>
-            <div className="space-y-4 text-sm text-slate-400 leading-relaxed">
-              <p>
-                The national median annual wage in the United States was{" "}
-                <strong className="text-slate-200">$49,500</strong> according to
-                BLS Occupational Employment and Wage Statistics (OES) May 2024
-                data — meaning exactly half of all American workers earned above
-                this figure and half earned below. But whether $49,500 is a
-                "good salary" depends entirely on your occupation, your state,
-                and your household's cost of living. A single benchmark number
-                cannot answer that question on its own.
-              </p>
-              <p>
-                Salary percentiles provide a far more useful framework.
-                Earning at the{" "}
-                <strong className="text-slate-200">75th percentile</strong> in
-                your field means you out-earn 75% of workers in the same
-                occupation — a genuinely strong position regardless of the raw
-                number. For context,{" "}
-                <Link
-                  href="/salary/software-developers-engineers"
-                  className="text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  software developers and engineers
-                </Link>{" "}
-                at the national median earn{" "}
-                <strong className="text-slate-200">$127,260</strong>, while{" "}
-                <Link
-                  href="/salary/registered-nurses"
-                  className="text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  registered nurses
-                </Link>{" "}
-                at the median earn approximately{" "}
-                <strong className="text-slate-200">$86,480</strong>. Both
-                figures represent strong compensation — but the comparison is
-                only meaningful within each occupation's national distribution.
-              </p>
-              <p>
-                Geography reshapes the picture significantly. Workers in
-                California earn wages roughly{" "}
-                <strong className="text-slate-200">26% above</strong> the
-                national median, while Mississippi workers earn about 19% below
-                it. A $65,000 salary in Arkansas affords a very different
-                lifestyle than the same figure in New York City. The true
-                measure of a good salary in 2024 is not whether it clears some
-                universal threshold — it's where you rank within your specific
-                occupation and geographic market. Use the{" "}
-                <a href="#calculator" className="text-blue-400 hover:text-blue-300 transition-colors">
-                  RankMySalary calculator
-                </a>{" "}
-                above to find your exact percentile by job category and state.
-              </p>
-            </div>
-          </article>
+              {/* Category tag */}
+              <span
+                className="text-[11px] font-bold uppercase tracking-widest"
+                style={{ color: "#06b6d4" }}
+              >
+                {card.tag}
+              </span>
 
-          {/* ── Article 2 ───────────────────────────────────────────────────── */}
-          <article
-            id="article-negotiation"
-            className="glass rounded-2xl p-7"
-            aria-labelledby="article-2-title"
+              {/* Title */}
+              <h3 className="text-lg font-bold text-white leading-snug">
+                {card.title}
+              </h3>
+
+              {/* Excerpt */}
+              <p className="text-sm text-slate-400 leading-relaxed flex-1">
+                {card.excerpt}
+              </p>
+
+              {/* Read more link */}
+              <Link
+                href={`#${card.id}`}
+                className="text-sm font-medium transition-colors hover:underline"
+                style={{ color: "#3b82f6" }}
+              >
+                Read more →
+              </Link>
+            </article>
+          ))}
+        </div>
+
+        {/* View all button — shows when more guides are added */}
+        <div className="mt-8 text-center">
+          <Link
+            href="/#salary-insights"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-200 transition-colors"
+            style={{ border: "1px solid rgba(255,255,255,0.09)", background: "rgba(255,255,255,0.03)" }}
           >
-            <h2
-              id="article-2-title"
-              className="text-xl font-bold text-white mb-4 leading-snug"
-            >
-              How to Use Salary Percentile Data to Negotiate Your Pay
-            </h2>
-            <div className="space-y-4 text-sm text-slate-400 leading-relaxed">
-              <p>
-                Salary negotiations that lean on concrete, third-party data win
-                more often than those based on gut feel or anecdote. BLS
-                Occupational Employment and Wage Statistics give you exactly the
-                kind of authoritative benchmark that removes emotion from the
-                conversation and puts the focus on market reality. Knowing your
-                percentile before you walk into a negotiation is the single most
-                powerful preparation you can do.
-              </p>
-              <p>
-                Start by finding your current percentile using RankMySalary.
-                Enter your salary, occupation, and state. If you're at the{" "}
-                <strong className="text-slate-200">40th percentile</strong> in
-                your field, you're being paid below the median for your role —
-                an objective, data-backed case for a raise. If you're at the
-                60th, you're above median but may still have room to negotiate
-                toward the 75th percentile, especially if you've taken on
-                additional responsibilities. Knowing your number puts you in
-                control of the conversation.
-              </p>
-              <p>
-                When presenting data, frame your case around BLS figures rather
-                than crowdsourced sites. The Bureau of Labor Statistics surveys
-                over{" "}
-                <strong className="text-slate-200">
-                  1.1 million employer establishments
-                </strong>{" "}
-                — not self-reported employee estimates — making the data far
-                harder for a hiring manager to dispute. A strong opening might
-                be: "According to May 2024 BLS data, the median salary for my
-                role in this state is $X. I'm currently at the Yth percentile
-                and would like to discuss moving toward the 75th." Time your ask
-                to coincide with a recent achievement or your annual review
-                cycle for maximum leverage.
-              </p>
-            </div>
-          </article>
-
-          {/* ── Article 3 ───────────────────────────────────────────────────── */}
-          <article
-            id="article-highest-paying"
-            className="glass rounded-2xl p-7"
-            aria-labelledby="article-3-title"
-          >
-            <h2
-              id="article-3-title"
-              className="text-xl font-bold text-white mb-4 leading-snug"
-            >
-              Highest Paying Occupations in America — BLS 2024 Data
-            </h2>
-            <div className="space-y-4 text-sm text-slate-400 leading-relaxed">
-              <p>
-                The highest-paying occupations in America share a common thread:
-                they require advanced education, specialized skills, or
-                significant managerial responsibility — often all three.
-                According to BLS OES May 2024 national data, the occupations
-                commanding the highest median annual wages are concentrated in
-                executive management, technology leadership, and healthcare.
-              </p>
-              <p>
-                At the top of the distribution,{" "}
-                <Link
-                  href="/salary/top-executives-ceos"
-                  className="text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  top executives and CEOs
-                </Link>{" "}
-                earn a national median of{" "}
-                <strong className="text-slate-200">$189,520</strong>, with the
-                top 10% exceeding $208,000.{" "}
-                <Link
-                  href="/salary/it-technology-managers"
-                  className="text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  IT managers
-                </Link>{" "}
-                follow at{" "}
-                <strong className="text-slate-200">$169,510</strong>, and{" "}
-                <Link
-                  href="/salary/marketing-sales-managers"
-                  className="text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  marketing managers
-                </Link>{" "}
-                reach a median of{" "}
-                <strong className="text-slate-200">$158,280</strong>.{" "}
-                <Link
-                  href="/salary/financial-managers"
-                  className="text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  Financial managers
-                </Link>{" "}
-                earn a median of{" "}
-                <strong className="text-slate-200">$156,100</strong>. In
-                technology,{" "}
-                <Link
-                  href="/salary/software-developers-engineers"
-                  className="text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  software developers and engineers
-                </Link>{" "}
-                command{" "}
-                <strong className="text-slate-200">$127,260</strong> at the
-                median, with the top 10% exceeding $208,000.
-              </p>
-              <p>
-                The common denominator across all top-paying occupations is
-                leverage: these roles either manage large sums of capital, lead
-                teams of other high-value workers, or possess technical skills
-                that are genuinely scarce in the labor market. Workers pursuing
-                high-paying careers without a medical degree will find the
-                strongest returns in technology leadership, financial management,
-                and specialized engineering. If you're already in one of these
-                fields, check your precise percentile on any occupation page to
-                see exactly how your pay compares to your peers nationally and
-                in your state.
-              </p>
-            </div>
-          </article>
-
-          {/* ── Article 4 ───────────────────────────────────────────────────── */}
-          <article
-            id="article-bls-vs-crowdsourced"
-            className="glass rounded-2xl p-7"
-            aria-labelledby="article-4-title"
-          >
-            <h2
-              id="article-4-title"
-              className="text-xl font-bold text-white mb-4 leading-snug"
-            >
-              Why Government Salary Data Is More Reliable Than Crowdsourced Estimates
-            </h2>
-            <div className="space-y-4 text-sm text-slate-400 leading-relaxed">
-              <p>
-                When you search for salary information online, you'll encounter
-                two types of data: government-collected statistics from the
-                Bureau of Labor Statistics, and crowdsourced estimates from
-                sites like Glassdoor, PayScale, or Levels.fyi. Understanding
-                the difference matters when you're using salary data to make
-                real financial decisions — like whether to accept a job offer or
-                ask for a raise.
-              </p>
-              <p>
-                The BLS Occupational Employment and Wage Statistics program
-                surveys approximately{" "}
-                <strong className="text-slate-200">
-                  1.1 million employer establishments
-                </strong>{" "}
-                across all industries each year. Employers report the actual
-                wages they pay — not what employees think they're paid. This
-                removes a fundamental source of bias: people tend to overreport
-                their compensation on voluntary surveys, particularly when
-                bonuses, equity, and variable compensation blur the line between
-                base salary and total comp. The BLS specifically measures annual
-                base wages, giving you a clean, consistent, and comparable
-                figure across all occupations.
-              </p>
-              <p>
-                Crowdsourced platforms also suffer from selection bias. The
-                workers most motivated to report salaries on Glassdoor are those
-                who are either very satisfied or very dissatisfied — the middle
-                of the distribution is systematically underrepresented.
-                High-paid tech workers in San Francisco are overrepresented
-                relative to workers in lower-cost regions. The result is a
-                skewed picture of what most Americans actually earn. BLS OES
-                data covers all 50 states, all wage levels, and all industries
-                with a methodology standardized over decades. Every figure on
-                RankMySalary comes directly from BLS OES May 2024 national
-                estimates — not from anonymous self-reports.
-              </p>
-            </div>
-          </article>
-
-          {/* ── Article 5 ───────────────────────────────────────────────────── */}
-          <article
-            id="article-salary-by-state"
-            className="glass rounded-2xl p-7"
-            aria-labelledby="article-5-title"
-          >
-            <h2
-              id="article-5-title"
-              className="text-xl font-bold text-white mb-4 leading-snug"
-            >
-              Salary Differences by State — What the BLS Data Shows
-            </h2>
-            <div className="space-y-4 text-sm text-slate-400 leading-relaxed">
-              <p>
-                The United States does not have a single labor market — it has
-                fifty of them, each with distinct wage levels, industry
-                concentrations, and costs of living. BLS OES May 2024 data
-                reveals a striking spread: workers in the highest-paying states
-                earn wages{" "}
-                <strong className="text-slate-200">26–38% above</strong> the
-                national median, while workers in the lowest-paying states earn
-                15–20% below it — a difference that compounds dramatically over
-                a career.
-              </p>
-              <p>
-                California and Washington state consistently rank at the top
-                across most occupations, driven by the concentration of
-                technology, finance, and healthcare employers in the Bay Area,
-                Seattle, and Los Angeles. The District of Columbia is an outlier
-                in white-collar occupations, paying wages roughly{" "}
-                <strong className="text-slate-200">38% above</strong> the
-                national median due to the density of federal government and
-                consulting roles. Massachusetts and New York round out the top
-                tier, particularly in financial services and healthcare. At the
-                other end, Mississippi, Arkansas, and West Virginia rank in the
-                bottom five across nearly every major occupation category.
-              </p>
-              <p>
-                Raw wage comparisons without cost-of-living adjustment can
-                mislead, however. A{" "}
-                <Link
-                  href="/salary/software-developers-engineers"
-                  className="text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  software developer
-                </Link>{" "}
-                earning $130,000 in Seattle faces significantly higher housing
-                costs than the same developer earning $100,000 in Austin, Texas
-                — and the after-tax, after-housing take-home may favor Texas.
-                Remote work has added a new dimension: workers who earn
-                California-level wages while living in lower-cost states can
-                capture genuine geographic arbitrage. Use the state comparison
-                tables on any occupation page to see how your state stacks up
-                against the national median and whether relocating could
-                materially improve your financial position.
-              </p>
-            </div>
-          </article>
-
+            View all guides →
+          </Link>
         </div>
       </section>
     </main>

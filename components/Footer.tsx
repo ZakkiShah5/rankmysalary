@@ -1,108 +1,136 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
-import { JOB_CATEGORY_GROUPS } from "@/lib/blsData";
-import { SLUG_BY_KEY } from "@/lib/slugs";
+
+const POPULAR_OCCUPATIONS = [
+  { href: "/salary/software-developers-engineers", label: "Software Developers" },
+  { href: "/salary/registered-nurses",             label: "Registered Nurses" },
+  { href: "/salary/high-school-teachers",           label: "Teachers" },
+  { href: "/salary/financial-analysts-advisors",    label: "Financial Analysts" },
+  { href: "/salary/data-scientists-ml-engineers",   label: "Data Scientists" },
+  { href: "/salary/physicians-surgeons",             label: "Physicians & Surgeons" },
+  { href: "/salary/civil-structural-engineers",      label: "Engineers" },
+];
+
+const RESOURCES = [
+  { href: "/",                                    label: "Salary Calculator" },
+  { href: "/#calculator",                         label: "Am I Underpaid?" },
+  { href: "/salary/software-developers-engineers", label: "Salary by State" },
+  { href: "/#calculator",                         label: "Average Salary by Occupation" },
+  { href: "/salary/is-100000-a-good-salary",      label: "Is $100k a Good Salary?" },
+];
 
 export default function Footer() {
   return (
     <footer style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
-      <div className="max-w-[1100px] mx-auto px-6 py-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+      <div className="max-w-[1100px] mx-auto px-6 py-12">
+
+        {/* ── 4-column grid ──────────────────────────────────────────────────── */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-10 mb-10">
 
           {/* Col 1 — Brand */}
-          <div>
-            <Logo className="mb-3" />
-            <p className="text-sm text-slate-500 leading-relaxed">
+          <div className="col-span-2 md:col-span-1">
+            <Logo className="mb-4" />
+            <p className="text-sm text-slate-500 leading-relaxed mb-5">
               Free salary percentile calculator powered by official US government wage data.
             </p>
-          </div>
-
-          {/* Col 2 — Nav */}
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-3">Explore</p>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/" className="text-sm text-slate-400 hover:text-slate-200 transition-colors">
-                  Salary Calculator
-                </Link>
-              </li>
-              <li>
-                <Link href="/salary/software-developers-engineers" className="text-sm text-slate-400 hover:text-slate-200 transition-colors">
-                  Software Developer Salaries
-                </Link>
-              </li>
-              <li>
-                <Link href="/salary/registered-nurses" className="text-sm text-slate-400 hover:text-slate-200 transition-colors">
-                  Registered Nurse Salaries
-                </Link>
-              </li>
-              <li>
-                <Link href="/salary/financial-analysts-advisors" className="text-sm text-slate-400 hover:text-slate-200 transition-colors">
-                  Financial Analyst Salaries
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Col 3 — Data source */}
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-3">Data Source</p>
-            <p className="text-sm text-slate-500 leading-relaxed">
-              All wage data comes from the{" "}
-              <span className="text-slate-400 font-medium">Bureau of Labor Statistics</span>{" "}
-              Occupational Employment and Wage Statistics (OES) program, May 2024 release.
-            </p>
-            <div className="mt-3 flex items-center gap-2">
-              <span
-                className="relative flex h-2 w-2 shrink-0"
-                aria-hidden="true"
-              >
-                <span className="absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "#06b6d4", animation: "ping 1.5s cubic-bezier(0,0,0.2,1) infinite" }} />
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-2 w-2 shrink-0" aria-hidden="true">
+                <span
+                  className="absolute inline-flex h-full w-full rounded-full opacity-75"
+                  style={{ background: "#06b6d4", animation: "ping 1.5s cubic-bezier(0,0,0.2,1) infinite" }}
+                />
                 <span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: "#06b6d4" }} />
               </span>
               <span className="text-xs text-slate-600">BLS OES May 2024 · 116 occupations</span>
             </div>
           </div>
-        </div>
 
-        {/* Occupation sitemap */}
-        <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }} className="pt-8 mb-8">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-6">
-            Salary Data by Occupation
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-7">
-            {JOB_CATEGORY_GROUPS.map((group) => (
-              <div key={group.group}>
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-2.5">
-                  {group.group}
-                </p>
-                <ul className="space-y-1.5">
-                  {group.categories.map((cat) => {
-                    const slug = SLUG_BY_KEY[cat.value];
-                    if (!slug) return null;
-                    return (
-                      <li key={cat.value}>
-                        <Link
-                          href={`/salary/${slug}`}
-                          className="text-xs text-slate-500 hover:text-slate-300 transition-colors leading-relaxed"
-                        >
-                          {cat.label}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ))}
+          {/* Col 2 — Popular Occupations */}
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-4">
+              Popular Occupations
+            </p>
+            <ul className="space-y-2.5">
+              {POPULAR_OCCUPATIONS.map(({ href, label }) => (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    className="text-sm text-slate-400 hover:text-slate-200 transition-colors"
+                  >
+                    {label}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link
+                  href="/#calculator"
+                  className="text-sm font-medium transition-colors"
+                  style={{ color: "#3b82f6" }}
+                >
+                  → View all occupations
+                </Link>
+              </li>
+            </ul>
           </div>
+
+          {/* Col 3 — Resources */}
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-4">
+              Resources
+            </p>
+            <ul className="space-y-2.5">
+              {RESOURCES.map(({ href, label }) => (
+                <li key={label}>
+                  <Link
+                    href={href}
+                    className="text-sm text-slate-400 hover:text-slate-200 transition-colors"
+                  >
+                    {label}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <a
+                  href="https://www.bls.gov/oes/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-slate-400 hover:text-slate-200 transition-colors"
+                >
+                  BLS Data Methodology ↗
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Col 4 — Data Source */}
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-4">
+              Data Source
+            </p>
+            <ul className="space-y-2.5">
+              {[
+                "Bureau of Labor Statistics",
+                "OES May 2024 Release",
+                "116 Occupations Covered",
+                "All 50 US States + D.C.",
+                "Employer-Reported Wages",
+              ].map((item) => (
+                <li key={item} className="text-sm text-slate-500">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+
         </div>
 
-        {/* Copyright bar */}
+        {/* ── Copyright bar ───────────────────────────────────────────────────── */}
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }} className="pt-6 text-center">
           <p style={{ fontSize: "11px", lineHeight: "1.6" }} className="text-slate-700">
             &copy; 2026 RankMySalary. Built with official US government salary data. Not affiliated with the US Bureau of Labor Statistics.
           </p>
         </div>
+
       </div>
     </footer>
   );
