@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import Logo from "@/components/Logo";
+import OccupationSearch from "@/components/OccupationSearch";
 
 export const metadata: Metadata = {
   title: "Page Not Found — RankMySalary",
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[70vh] px-6 text-center">
+    <div className="flex flex-col p-6 items-center justify-center min-h-[70vh] px-6 text-center">
 
       <Logo size="lg" className="mb-10" />
 
@@ -40,7 +41,7 @@ export default function NotFound() {
           Go to Salary Calculator
         </Link>
         <Link
-          href="/salary/software-developers-engineers"
+          href="/salary/software-developers"
           className="px-7 py-3 rounded-xl font-semibold text-sm text-slate-300 hover:text-white transition-colors"
           style={{
             background: "rgba(255,255,255,0.06)",
@@ -79,6 +80,8 @@ export default function NotFound() {
           ))}
         </ul>
       </div>
+
+      <OccupationSearch />
 
     </div>
   );
