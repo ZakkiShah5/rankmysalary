@@ -8,9 +8,12 @@ const POPULAR_OCCUPATIONS = [
 ];
 
 const RESOURCES = [
-  { href: "/",                              label: "Salary Calculator" },
+  { href: "/",                               label: "Salary Calculator" },
+  { href: "/am-i-underpaid",                 label: "Am I Underpaid?" },
+  { href: "/salary-comparison-by-state",     label: "Salary by State" },
+  { href: "/average-salary-by-occupation",   label: "Average Salary by Occupation" },
   { href: "/salary/is-100000-a-good-salary", label: "Is $100k a Good Salary?" },
-  { href: "/#faq",                          label: "BLS Data Methodology" },
+  { href: "/#faq",                           label: "BLS Data Methodology" },
 ];
 
 export default function Footer() {
