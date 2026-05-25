@@ -14,14 +14,15 @@ import FAQAccordion from "@/components/FAQAccordion";
 
 export const dynamicParams = false;
 
-export function generateStaticParams({
-  params,
-}: {
-  params: { "occupation-slug": string };
-}) {
-  // Called once per parent occupation slug — return all state slugs
-  void params; // parent slug is validated at the parent segment
-  return Object.keys(STATE_BY_SLUG).map((slug) => ({ "state-slug": slug }));
+export function generateStaticParams() {
+  // Bottom-up: return all valid occupation × state combinations so Next.js
+  // builds every state page at deploy time without needing a parent layout.tsx.
+  return Object.keys(OCCUPATION_BY_SLUG).flatMap((occSlug) =>
+    Object.keys(STATE_BY_SLUG).map((stateSlug) => ({
+      "occupation-slug": occSlug,
+      "state-slug": stateSlug,
+    }))
+  );
 }
 
 type Props = {
