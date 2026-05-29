@@ -46,6 +46,58 @@ function ordinalLocal(n: number): string {
   }
 }
 
+// ── Occupation page content helpers ───────────────────────────────────────────
+const NATIONAL_MEDIAN_ALL = OVERALL_PERCENTILES.p50; // 49,500
+
+function vsAllWorkersLabel(occMedian: number): string {
+  const ratio = occMedian / NATIONAL_MEDIAN_ALL;
+  if (ratio >= 1.30) return "significantly above";
+  if (ratio >= 1.05) return "above";
+  if (ratio >= 0.95) return "near";
+  if (ratio >= 0.70) return "below";
+  return "significantly below";
+}
+
+function generateOccupationIntro(
+  occLabel: string,
+  national: { p10: number; p25: number; p50: number; p75: number; p90: number; mean: number },
+  workerPercentile: number,
+): string {
+  const { p10, p25, p50: median, p75, p90, mean } = national;
+  const pctVsAll = Math.round(Math.abs((median - NATIONAL_MEDIAN_ALL) / NATIONAL_MEDIAN_ALL) * 100);
+  const dir = median >= NATIONAL_MEDIAN_ALL ? "above" : "below";
+  const meanIsAbove = mean > median;
+  const meanPct = Math.round(Math.abs((mean - median) / median) * 100);
+
+  if (workerPercentile >= 75) {
+    return [
+      `${occLabel} ranks among the higher-paying occupations in the United States, with a national median annual salary of ${fmt(median)} — ${pctVsAll}% ${dir} the all-occupation median of ${fmt(NATIONAL_MEDIAN_ALL)}.`,
+      `Professionals in this field sit at the ${ordinalLocal(workerPercentile)} percentile of all US workers, outearning the vast majority of the American workforce.`,
+      `Entry-level positions typically start around ${fmt(p10)} per year, while experienced workers in the top 10% earn over ${fmt(p90)} annually.`,
+      `The middle 50% of ${occLabel} earn between ${fmt(p25)} and ${fmt(p75)} — a range that reflects income growth with experience and specialization.`,
+      `The mean salary of ${fmt(mean)} is ${meanPct}% ${meanIsAbove ? "above" : "below"} the median, ${meanIsAbove ? "driven upward by high earners at the top of the pay scale" : "suggesting a compressed wage distribution at the top end"}.`,
+    ].join(" ");
+  }
+
+  if (workerPercentile >= 45) {
+    return [
+      `${occLabel} salaries align broadly with the national workforce average, with a median annual wage of ${fmt(median)} placing this occupation at the ${ordinalLocal(workerPercentile)} percentile of all US workers.`,
+      `This puts ${occLabel} within ${pctVsAll}% of the all-occupation national median of ${fmt(NATIONAL_MEDIAN_ALL)}.`,
+      `Earnings span from ${fmt(p10)} at the entry level to ${fmt(p90)} for top earners — a ${fmt(p90 - p10)} spread that reflects the impact of experience, specialization, and geography.`,
+      `Workers between the 25th and 75th percentile earn ${fmt(p25)} to ${fmt(p75)} annually.`,
+      `The mean wage of ${fmt(mean)} is ${meanPct}% ${meanIsAbove ? "above" : "below"} the median, ${meanIsAbove ? "indicating a right-skewed distribution where high earners pull the average upward" : "suggesting wages are relatively evenly distributed across experience levels"}.`,
+    ].join(" ");
+  }
+
+  return [
+    `${occLabel} salaries are ${vsAllWorkersLabel(median)} the national median for all US workers.`,
+    `At a median annual wage of ${fmt(median)}, professionals in this field rank at the ${ordinalLocal(workerPercentile)} percentile nationally — ${pctVsAll}% ${dir} the all-occupation median of ${fmt(NATIONAL_MEDIAN_ALL)}.`,
+    `Salaries span from ${fmt(p10)} at the 10th percentile to ${fmt(p90)} for the top 10% of earners, with the middle half earning ${fmt(p25)} to ${fmt(p75)}.`,
+    `Entry-level positions start near ${fmt(p10)}, with meaningful income growth available with experience.`,
+    `The mean salary of ${fmt(mean)} ${meanIsAbove ? `is ${meanPct}% above the median, reflecting high earners at the top of the distribution` : `closely tracks the median, indicating a relatively even wage spread`}.`,
+  ].join(" ");
+}
+
 export function generateStaticParams() {
   const occSlugs = Object.keys(OCCUPATION_BY_SLUG).map((slug) => ({
     "occupation-slug": slug,
@@ -81,8 +133,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!occ) return {};
   const { national } = getOccupationData(occ.key, "CA");
   return {
-    title: `${occ.label} Salary Percentiles — National Data (2024)`,
-    description: `The median ${occ.label} salary is ${fmt(national.p50)} nationally. See full percentile breakdown and compare salaries across all 50 US states — BLS OES 2024 data.`,
+    title: `${occ.label} Salary Percentiles — National & State Data (2024 BLS)`,
+    description: `See where your ${occ.label} salary ranks nationally and in your state. Based on official BLS OES 2024 data. Median salary: ${fmt(national.p50)}. Free percentile calculator.`,
     alternates: { canonical: `https://rankmysalary.com/salary/${slug}` },
     openGraph: {
       title: `${occ.label} Salary Percentiles (2024)`,
@@ -402,6 +454,7 @@ export default async function OccupationPage({ params }: Props) {
   if (!occ) notFound();
 
   const { national } = getOccupationData(occ.key, "CA");
+  const workerPercentile = estimatePercentile(national.p50, OVERALL_PERCENTILES);
 
   // State comparison data, sorted by state median salary (desc)
   const stateRows = Object.entries(US_STATES)
@@ -435,18 +488,26 @@ export default async function OccupationPage({ params }: Props) {
     mainEntity: [
       {
         "@type": "Question",
-        name: `What is the median salary for ${occ.label}?`,
+        name: `What is the average salary for ${occ.label}?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `The median salary for ${occ.label} in the United States is ${fmt(national.p50)} per year, according to BLS OES May 2024 data.`,
+          text: `According to BLS OES May 2024 data, the median annual wage for ${occ.label} in the United States is ${fmt(national.p50)}. The mean (average) salary is ${fmt(national.mean)}, which is ${national.mean > national.p50 ? "higher" : "lower"} than the median.`,
         },
       },
       {
         "@type": "Question",
-        name: `What do the top 10% of ${occ.label} earn?`,
+        name: `Is ${occ.label} a well-paying career?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `The top 10% of ${occ.label} in the US earn more than ${fmt(national.p90)} annually. The mean (average) salary is ${fmt(national.mean)}.`,
+          text: `At a median of ${fmt(national.p50)}, ${occ.label} pays ${national.p50 >= NATIONAL_MEDIAN_ALL ? "above" : "below"} the national median of ${fmt(NATIONAL_MEDIAN_ALL)} for all occupations. Workers in this field rank at the ${ordinalLocal(workerPercentile)} percentile of all US workers.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `What state pays ${occ.label} the most?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `${top5[0]?.name ?? "Data unavailable"} offers the highest salaries for ${occ.label}, with a median of ${fmt(top5[0]?.median ?? 0)} — ${top5[0]?.vs ?? ""} above the national median of ${fmt(national.p50)}.`,
         },
       },
     ],
@@ -477,10 +538,7 @@ export default async function OccupationPage({ params }: Props) {
             </h1>
 
             <p className="text-slate-400 text-base max-w-2xl mx-auto leading-relaxed">
-              The median salary for <strong className="text-slate-200">{occ.label}</strong> in the United States
-              is <strong className="text-white">{fmt(national.p50)}</strong>.
-              The top 10% earn more than <strong className="text-white">{fmt(national.p90)}</strong> annually.
-              Use the calculator below to see your personal percentile rank.
+              {generateOccupationIntro(occ.label, national, workerPercentile)}
             </p>
           </div>
         </div>
@@ -503,6 +561,27 @@ export default async function OccupationPage({ params }: Props) {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* ── Key Insights ───────────────────────────────────────────────────── */}
+        <div className="mx-4 md:mx-6 mb-6">
+          <div className="glass rounded-2xl p-6">
+            <h2 className="text-sm font-semibold text-slate-300 mb-4 tracking-wide">
+              Key Salary Insights — {occ.label}
+            </h2>
+            <ul className="space-y-3">
+              {[
+                `Median salary of ${fmt(national.p50)} — ${Math.round(Math.abs((national.p50 - NATIONAL_MEDIAN_ALL) / NATIONAL_MEDIAN_ALL) * 100)}% ${national.p50 >= NATIONAL_MEDIAN_ALL ? "above" : "below"} the national median of ${fmt(NATIONAL_MEDIAN_ALL)} across all occupations`,
+                `Salary range spans ${fmt(national.p10)} to ${fmt(national.p90)} — a ${fmt(national.p90 - national.p10)} difference between entry-level and top earners`,
+                `Workers at the 75th percentile earn ${fmt(national.p75)} or more annually`,
+              ].map((insight) => (
+                <li key={insight} className="flex items-start gap-3 text-sm text-slate-400">
+                  <span className="text-emerald-400 mt-0.5 shrink-0">✓</span>
+                  <span>{insight}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
@@ -564,6 +643,13 @@ export default async function OccupationPage({ params }: Props) {
                 </Link>
               ))}
             </div>
+            <p className="mt-5 pt-4 border-t border-white/[0.06] text-xs text-slate-500 leading-relaxed">
+              Top paying states for {occ.label} include {top5[0].name} ({fmt(top5[0].median)}),{" "}
+              {top5[1].name} ({fmt(top5[1].median)}), and {top5[2].name} ({fmt(top5[2].median)}) — all
+              significantly above the national median of {fmt(national.p50)} for this occupation.
+              {" "}{top5[3].name} ({fmt(top5[3].median)}) and {top5[4].name} ({fmt(top5[4].median)}) round
+              out the five highest-paying states.
+            </p>
           </div>
         </div>
 
@@ -615,24 +701,16 @@ export default async function OccupationPage({ params }: Props) {
           <h2 className="text-xl font-bold text-slate-200 mb-6">{occ.label} Salary — FAQ</h2>
           <FAQAccordion items={[
             {
-              q: `What is the median salary for ${occ.label}?`,
-              a: `According to BLS OES May 2024 data, the median annual salary for ${occ.label} in the United States is ${fmt(national.p50)}. Half of all ${occ.label} earn more than this, and half earn less.`,
+              q: `What is the average salary for ${occ.label}?`,
+              a: `According to BLS OES May 2024 data, the median annual wage for ${occ.label} in the United States is ${fmt(national.p50)}. The mean (average) salary is ${fmt(national.mean)}, which is ${national.mean > national.p50 ? "higher" : "lower"} than the median — ${national.mean > national.p50 ? "high earners at the top of the distribution pull the average upward" : "reflecting a relatively compressed wage distribution at the upper end"}. Half of all ${occ.label} earn more than ${fmt(national.p50)} and half earn less.`,
             },
             {
-              q: `What do the top 10% of ${occ.label} earn?`,
-              a: `The top 10% of ${occ.label} in the US earn more than ${fmt(national.p90)} per year. The mean (average) salary is ${fmt(national.mean)}, which is ${national.mean > national.p50 ? "above" : "below"} the median because higher earners pull the average up.`,
+              q: `Is ${occ.label} a well-paying career?`,
+              a: `At a median of ${fmt(national.p50)}, ${occ.label} pays ${national.p50 >= NATIONAL_MEDIAN_ALL ? "above" : "below"} the national median of ${fmt(NATIONAL_MEDIAN_ALL)} for all occupations. Workers in this field rank at the ${ordinalLocal(workerPercentile)} percentile of all US workers nationally, meaning ${workerPercentile}% of all employed Americans earn less. ${national.p50 >= NATIONAL_MEDIAN_ALL ? `The top 10% of ${occ.label} earn over ${fmt(national.p90)}, making this a strong career choice for those who reach senior levels.` : `With experience and specialization, top earners in this field can reach ${fmt(national.p75)} to ${fmt(national.p90)} annually.`}`,
             },
             {
               q: `What state pays ${occ.label} the most?`,
-              a: `${top5[0]?.name ?? "Data unavailable"} pays ${occ.label} the most, with a median salary of ${fmt(top5[0]?.median ?? 0)} — ${top5[0]?.vs ?? ""} compared to the national median of ${fmt(national.p50)}.`,
-            },
-            {
-              q: `Is ${fmt(national.p50)} a good salary for ${occ.label}?`,
-              a: `${fmt(national.p50)} is the median salary for ${occ.label}, meaning it puts you exactly at the 50th percentile — right in the middle of all earners in this occupation. Whether it's "good" depends on your location, experience, and industry. Use the calculator above to see where you rank.`,
-            },
-            {
-              q: `How much do entry-level ${occ.label} make?`,
-              a: `Entry-level ${occ.label} typically earn around the 10th–25th percentile range. According to BLS data, that's approximately ${fmt(national.p10)} to ${fmt(national.p25)} per year nationally. Salaries vary significantly by state and employer.`,
+              a: `${top5[0]?.name ?? "Data unavailable"} offers the highest salaries for ${occ.label}, with a median of ${fmt(top5[0]?.median ?? 0)} — ${top5[0]?.vs ?? ""} compared to the national median of ${fmt(national.p50)} for this occupation. ${top5[1]?.name} (${fmt(top5[1]?.median ?? 0)}) and ${top5[2]?.name} (${fmt(top5[2]?.median ?? 0)}) also rank among the top-paying states. Geographic variation in ${occ.label} salaries reflects regional differences in industry concentration, cost of living, and local labor market competition.`,
             },
           ]} />
         </div>
