@@ -5,6 +5,7 @@ import {
   OCCUPATION_BY_SLUG,
   STATE_BY_SLUG,
   SLUG_BY_STATE,
+  ALIAS_TO_CANONICAL,
 } from "@/lib/slugs";
 import {
   getOccupationData,
@@ -132,10 +133,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const occ = OCCUPATION_BY_SLUG[slug];
   if (!occ) return {};
   const { national } = getOccupationData(occ.key, "CA");
+  const canonicalSlug = ALIAS_TO_CANONICAL[slug] ?? slug;
   return {
     title: `${occ.label} Salary Percentiles — National & State Data (2024 BLS)`,
     description: `See where your ${occ.label} salary ranks nationally and in your state. Based on official BLS OES 2024 data. Median salary: ${fmt(national.p50)}. Free percentile calculator.`,
-    alternates: { canonical: `https://rankmysalary.com/salary/${slug}` },
+    alternates: { canonical: `https://rankmysalary.com/salary/${canonicalSlug}` },
     openGraph: {
       title: `${occ.label} Salary Percentiles (2024)`,
       description: `Median: ${fmt(national.p50)} · Top 10%: ${fmt(national.p90)} · BLS OES 2024`,
