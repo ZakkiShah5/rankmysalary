@@ -1,12 +1,26 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Ensure every URL is canonical: no trailing-slash variant is ever served as 200.
+  // Requests to /path/ are 308-redirected to /path at the Next.js level, and the
+  // explicit rule below catches anything the framework misses (e.g. static CDN paths).
+  trailingSlash: false,
+
   images: {
     formats: ["image/avif", "image/webp"],
   },
   async redirects() {
     return [
-      // Old occupation slugs (before label changes) → correct slugs (301 permanent)
+      // ── Strip trailing slashes site-wide (must be first) ──────────────────
+      // Covers all pages: /salary/it-technology-managers/ → /salary/it-technology-managers
+      // :path+ requires ≥1 segment, so the root "/" is never matched.
+      {
+        source: "/:path+/",
+        destination: "/:path+",
+        permanent: true,
+      },
+
+      // ── Old occupation slugs (before label changes) → correct slugs ───────
       // Wildcard covers both the occupation page and all state sub-pages
       // e.g. /salary/software-developers/california → /salary/software-developers-engineers/california
       {
