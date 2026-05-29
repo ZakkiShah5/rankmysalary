@@ -2,9 +2,9 @@ import Link from "next/link";
 import Logo from "@/components/Logo";
 
 const POPULAR_OCCUPATIONS = [
-  { href: "/salary/software-developers", label: "Software Developers" },
-  { href: "/salary/registered-nurses",   label: "Registered Nurses" },
-  { href: "/salary/financial-analysts",  label: "Financial Analysts" },
+  { href: "/salary/software-developers-engineers", label: "Software Developers" },
+  { href: "/salary/registered-nurses",             label: "Registered Nurses" },
+  { href: "/salary/financial-analysts-advisors",   label: "Financial Analysts" },
 ];
 
 const RESOURCES = [

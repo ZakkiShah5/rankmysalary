@@ -41,7 +41,7 @@ export default function NotFound() {
           Go to Salary Calculator
         </Link>
         <Link
-          href="/salary/software-developers"
+          href="/salary/software-developers-engineers"
           className="px-7 py-3 rounded-xl font-semibold text-sm text-slate-300 hover:text-white transition-colors"
           style={{
             background: "rgba(255,255,255,0.06)",
