@@ -99,6 +99,28 @@ const nextConfig: NextConfig = {
         destination: "/salary/registered-nurses/:path*",
         permanent: true,
       },
+
+      // ── Short/partial slugs Google indexed → correct full slugs ───────────
+      {
+        source: "/salary/data-scientists/:path*",
+        destination: "/salary/data-scientists-ml-engineers/:path*",
+        permanent: true,
+      },
+      {
+        source: "/salary/physicians/:path*",
+        destination: "/salary/physicians-surgeons/:path*",
+        permanent: true,
+      },
+      {
+        source: "/salary/teachers/:path*",
+        destination: "/salary/high-school-teachers/:path*",
+        permanent: true,
+      },
+      {
+        source: "/salary/lawyers-judges/:path*",
+        destination: "/salary/lawyers-attorneys/:path*",
+        permanent: true,
+      },
     ];
   },
 };
