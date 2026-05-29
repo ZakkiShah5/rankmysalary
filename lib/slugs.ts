@@ -24,6 +24,22 @@ for (const cat of JOB_CATEGORIES) {
   SLUG_BY_KEY[cat.value] = slug;
 }
 
+// Short/alias slugs Google has indexed → their canonical full slugs.
+// Aliases are registered in OCCUPATION_BY_SLUG so static pages are built for
+// them; the canonical tag in each page points back to the full slug.
+export const ALIAS_TO_CANONICAL: Record<string, string> = {
+  "data-scientists":  "data-scientists-ml-engineers",
+  "physicians":       "physicians-surgeons",
+  "teachers":         "high-school-teachers",
+  "lawyers-judges":   "lawyers-attorneys",
+};
+
+for (const [alias, canonical] of Object.entries(ALIAS_TO_CANONICAL)) {
+  if (!OCCUPATION_BY_SLUG[alias] && OCCUPATION_BY_SLUG[canonical]) {
+    OCCUPATION_BY_SLUG[alias] = OCCUPATION_BY_SLUG[canonical];
+  }
+}
+
 // State slug → { code, name }
 export const STATE_BY_SLUG: Record<string, StateMeta> = {};
 // State code → slug

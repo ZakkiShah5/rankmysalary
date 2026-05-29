@@ -6,6 +6,7 @@ import {
   STATE_BY_SLUG,
   SLUG_BY_STATE,
   SLUG_BY_KEY,
+  ALIAS_TO_CANONICAL,
 } from "@/lib/slugs";
 import { getOccupationData, US_STATES, JOB_CATEGORIES } from "@/lib/blsData";
 import { fmt, pct } from "@/lib/format";
@@ -43,7 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${occ.label} Salary in ${st.name} — Percentile Rankings (2024)`,
     description: `The median ${occ.label} salary in ${st.name} is ${fmt(state.p50)}, ${diff} ${dir} the national median of ${fmt(national.p50)}. See the full percentile breakdown — BLS OES 2024 data.`,
     alternates: {
-      canonical: `https://rankmysalary.com/salary/${occSlug}/${stateSlug}`,
+      canonical: `https://rankmysalary.com/salary/${ALIAS_TO_CANONICAL[occSlug] ?? occSlug}/${stateSlug}`,
     },
     openGraph: {
       title: `${occ.label} Salary in ${st.name} (2024)`,
